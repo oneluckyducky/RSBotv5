@@ -2,11 +2,10 @@ package com.polycoding.darkwizards.tasks;
 
 import java.util.EnumSet;
 
-import org.powerbot.script.methods.MethodContext;
 import org.powerbot.script.wrappers.Path.TraversalOption;
 import org.powerbot.script.wrappers.Tile;
 
-import com.polycoding.darkwizards.misc.Variables;
+import com.polycoding.darkwizards.DarkWizardKiller;
 import com.polycoding.darkwizards.util.Timer;
 import com.polycoding.darkwizards.util.scriptcore.Task;
 
@@ -16,8 +15,11 @@ public class BankTravelling extends Task {
 			new Tile(3210, 3398, 0), new Tile(3199, 3415, 0),
 			new Tile(3190, 3429, 0) };
 
-	public BankTravelling(MethodContext arg0) {
+	private final DarkWizardKiller dwk;
+
+	public BankTravelling(DarkWizardKiller arg0) {
 		super(arg0);
+		dwk = arg0;
 	}
 
 	@Override
@@ -39,9 +41,8 @@ public class BankTravelling extends Task {
 
 	@Override
 	public boolean activate() {
-		return Variables.useFood
-				&& ctx.backpack.select().id(Variables.foodId).isEmpty()
-				&& circle.contains(ctx.players.local());
+		return dwk.useFood && ctx.backpack.select().id(dwk.foodId).isEmpty()
+				&& DarkWizardKiller.CIRCLE.contains(ctx.players.local());
 	}
 
 }

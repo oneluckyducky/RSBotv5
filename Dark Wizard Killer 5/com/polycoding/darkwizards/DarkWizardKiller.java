@@ -15,10 +15,11 @@ import org.powerbot.event.PaintListener;
 import org.powerbot.script.Manifest;
 import org.powerbot.script.PollingScript;
 import org.powerbot.script.methods.Skills;
+import org.powerbot.script.util.Random;
+import org.powerbot.script.wrappers.Area;
+import org.powerbot.script.wrappers.Tile;
 
 import com.polycoding.darkwizards.gui.GUI;
-import com.polycoding.darkwizards.misc.StaticMethods;
-import com.polycoding.darkwizards.misc.Variables;
 import com.polycoding.darkwizards.tasks.BankHandling;
 import com.polycoding.darkwizards.tasks.BankTravelling;
 import com.polycoding.darkwizards.tasks.Combat;
@@ -32,48 +33,69 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 	private final RenderingHints antialiasing = new RenderingHints(
 			RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-	private ArrayList<Task> taskList = new ArrayList<Task>();
+	public static ArrayList<Task> taskList = new ArrayList<Task>();
 
 	public static Timer scriptTimer = new Timer(0);
-
-	public static int poll = 373;
 
 	private GUI gui;
 
 	public static Task currentTask = null;
 
-	/*
-	 * private CombatTimer combatTimer = null; private Thread timerThread =
-	 * null;
-	 */// ignore
+	public Timer combatTimer = new Timer(3000);
 
+	public int startingExperience = 0, profit = 0, foodId = 0, foodAmount = 0;
+
+	public long startTime = 0;
+
+	public boolean guiIsDone = false, useFood = false;
+
+	public String status = "";
+
+	public static final Area CIRCLE = new Area(new Tile(3212, 3378, 0),
+			new Tile(3219, 3361, 0), new Tile(3236, 3362, 0), new Tile(3235,
+					3376, 0));
+
+	public static final int[] WIZARD_IDS = { 8871, 8872, 8873, 8874 };
+
+	public static final int[] LOOTABLE_ITEMS = { 556, 555, 554, 557, 561, 565,
+			562, 559, 563, 564, 558, 8015, 24154 };
+
+	public static final String[] ITEM_NAMES = { "Earth rune", "Air rune",
+			"Water rune", "Fire rune", "Mind rune", "Body rune", "Chaos rune",
+			"Nature rune", "Law rune", "Cosmic rune", "Blood rune",
+			"Staff of air", "Water talisman", "Fire Talisman",
+			"Earth talisman", "Staf of water" };
+
+	private DarkWizardKiller get(){
+		return this;
+	}
+	
 	@Override
 	public void start() {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				gui = new GUI();
+				gui = new GUI(get());
 			}
 		});
-		while (!Variables.guiIsDone) {
+		while (!guiIsDone) {
 			sleep(10);
 		}
-		Variables.startTime = System.currentTimeMillis();
+		startTime = System.currentTimeMillis();
 
 		final Skills skills = ctx.skills;
 		for (int i = 0; i < 7; i++)
-			Variables.startingExperience += skills.getExperience(i);
-		System.out.println("Starting exp: " + Variables.startingExperience);
+			startingExperience += skills.getExperience(i);
 
-		taskList.add(new BankTravelling(ctx));
-		taskList.add(new BankHandling(ctx));
-		taskList.add(new Combat(ctx));
-		taskList.add(new WizardTravelling(ctx));
+		taskList.add(new BankTravelling(this));
+		taskList.add(new BankHandling(this));
+		taskList.add(new Combat(this));
+		taskList.add(new WizardTravelling(this));
 	}
 
 	@Override
 	public int poll() {
-		if (poll == -1)
+		if (taskList.isEmpty() && guiIsDone)
 			getController().stop();
 		for (Task task : taskList) {
 			if (task.activate()) {
@@ -81,7 +103,7 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 				task.execute();
 			}
 		}
-		return poll;
+		return Random.nextInt(400, 750);
 	}
 
 	@Override
@@ -99,21 +121,19 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 		for (int i = 0; i < 7; i++)
 			currentExp += skills.getExperience(i);
 
-		int gainedExp = currentExp - Variables.startingExperience;
+		int gainedExp = currentExp - startingExperience;
 
-		final int hourlyExp = StaticMethods.getPerHour(gainedExp,
-				Variables.startTime);
+		final int hourlyExp = Timer.getPerHour(gainedExp, startTime);
 
-		final int hourlyProfit = StaticMethods.getPerHour(Variables.profit,
-				Variables.startTime);
+		final int hourlyProfit = Timer.getPerHour(profit, startTime);
 
-		final int hourlyKills = StaticMethods.getPerHour(
-				(int) (gainedExp / 65.5), Variables.startTime);
+		final int hourlyKills = Timer.getPerHour((int) (gainedExp / 65.5),
+				startTime);
 
 		final String gainedExpString = df.format(gainedExp);
 		final String hourlyExpString = df.format(hourlyExp);
 
-		final String gainedProfitString = df.format(Variables.profit);
+		final String gainedProfitString = df.format(profit);
 		final String hourlyProfitString = df.format(hourlyProfit);
 
 		final String killsString = df.format(gainedExp / 65.5);
@@ -121,7 +141,6 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 
 		// -- Fill top bar
 		g.setColor(new Color(0, 0, 0, 0.80f));
-		// g.fillRect(738, 49, 352, 172);
 		g.fillRect(0, 40, 352, 172);
 
 		g.setColor(Color.GRAY);
@@ -142,7 +161,6 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 		Graphics2D g2 = (Graphics2D) g.create();
 		g2.setColor(Color.WHITE);
 		g2.setFont(new Font("Arial", Font.BOLD, 12));
-		g2.drawString("Status: " + Variables.status, 25, 188);
-
+		g2.drawString("Status: " + status, 25, 188);
 	}
 }

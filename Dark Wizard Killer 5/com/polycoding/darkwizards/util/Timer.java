@@ -93,6 +93,10 @@ public class Timer {
 		return format(getRemaining());
 	}
 
+	public static int getPerHour(final int base, final long time) {
+		return (int) ((base) * 3600000D / (System.currentTimeMillis() - time));
+	}
+
 	/**
 	 * Converts milliseconds to a String in the format hh:mm:ss.
 	 * 

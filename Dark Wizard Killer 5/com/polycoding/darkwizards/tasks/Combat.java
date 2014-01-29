@@ -1,35 +1,35 @@
 package com.polycoding.darkwizards.tasks;
 
 import org.powerbot.script.lang.GroundItemQuery;
-import org.powerbot.script.methods.MethodContext;
 import org.powerbot.script.util.GeItem;
 import org.powerbot.script.wrappers.GroundItem;
 import org.powerbot.script.wrappers.Interactive;
 import org.powerbot.script.wrappers.Npc;
 
-import com.polycoding.darkwizards.misc.Const;
-import com.polycoding.darkwizards.misc.Variables;
+import com.polycoding.darkwizards.DarkWizardKiller;
 import com.polycoding.darkwizards.util.Timer;
 import com.polycoding.darkwizards.util.scriptcore.Task;
 
 public class Combat extends Task {
 
-	public Combat(MethodContext arg0) {
+	private final DarkWizardKiller dwk;
+
+	public Combat(DarkWizardKiller arg0) {
 		super(arg0);
+		dwk = arg0;
 	}
 
 	@Override
 	public boolean activate() {
-		boolean food = Variables.useFood ? inventoryContains(Variables.foodId)
-				: true;
-		return circle.contains(ctx.players.local())
+		boolean food = dwk.useFood ? inventoryContains(dwk.foodId) : true;
+		return DarkWizardKiller.CIRCLE.contains(ctx.players.local())
 				&& !ctx.players.local().isInCombat() && food;
 	}
 
 	@Override
 	public void execute() {
-		if (Variables.useFood && ctx.players.local().getHealthPercent() <= 51) {
-			ctx.backpack.select().id(Variables.foodId).shuffle().poll()
+		if (dwk.useFood && ctx.players.local().getHealthPercent() <= 51) {
+			ctx.backpack.select().id(dwk.foodId).shuffle().poll()
 					.interact("Eat");
 			sleep(600); // 1 tick to eat before retrying
 			return;
@@ -38,7 +38,7 @@ public class Combat extends Task {
 			log("Activating momentum");
 			ctx.keyboard.send("1");
 		}
-		Npc wizard = ctx.npcs.select().id(Const.WIZARD_IDS)
+		Npc wizard = ctx.npcs.select().id(DarkWizardKiller.WIZARD_IDS)
 				.select(Interactive.areOnScreen()).nearest().limit(2).shuffle()
 				.poll();
 		if (!wizard.isOnScreen()) {
@@ -65,7 +65,7 @@ public class Combat extends Task {
 
 	private boolean checkForLoot() {
 		GroundItemQuery<GroundItem> itemQuery = ctx.groundItems.select()
-				.id(Const.LOOTABLE_ITEMS).nearest();
+				.id(DarkWizardKiller.LOOTABLE_ITEMS).nearest();
 		if (itemQuery.size() > 0) {
 			log(itemQuery.size() + " grounditems!");
 			final GroundItem item = itemQuery.shuffle().poll();
@@ -78,7 +78,7 @@ public class Combat extends Task {
 					if (!timer.isRunning() || !item.isValid())
 						break;
 				}
-				Variables.profit += GeItem.getPrice(item.getId());
+				dwk.profit += GeItem.getPrice(item.getId());
 			}
 			return true;
 		}

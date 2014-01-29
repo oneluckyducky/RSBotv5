@@ -8,7 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
-import com.polycoding.darkwizards.misc.Variables;
+import com.polycoding.darkwizards.DarkWizardKiller;
 
 public class GUI extends JFrame {
 
@@ -27,7 +27,10 @@ public class GUI extends JFrame {
 
 	JButton btnStart = new JButton("Start");
 
-	public GUI() {
+	private DarkWizardKiller dwk;
+
+	public GUI(DarkWizardKiller arg0) {
+		dwk = arg0;
 
 		this.setSize(200, 225);
 		this.setAlwaysOnTop(true);
@@ -72,25 +75,25 @@ public class GUI extends JFrame {
 		final String quantityText = foodQuantity.getText();
 
 		if (idText.isEmpty() && quantityText.isEmpty()) {
-			Variables.useFood = false;
+			dwk.useFood = false;
 
 		} else if (!idText.isEmpty() && quantityText.isEmpty()) {
-			Variables.useFood = true;
-			Variables.foodId = Integer.parseInt(idText);
-			Variables.foodAmount = 8;
+			dwk.useFood = true;
+			dwk.foodId = Integer.parseInt(idText);
+			dwk.foodAmount = 8;
 
 		} else if (!idText.isEmpty() && !quantityText.isEmpty()) {
-			Variables.useFood = true;
-			Variables.foodId = Integer.parseInt(idText);
-			Variables.foodAmount = Integer.parseInt(quantityText);
+			dwk.useFood = true;
+			dwk.foodId = Integer.parseInt(idText);
+			dwk.foodAmount = Integer.parseInt(quantityText);
 
 		} else if (idText.isEmpty() && !quantityText.isEmpty()) {
 			JOptionPane.showMessageDialog(null, "wut");
 			return;
 		}
 
-		Variables.guiIsDone = true;
-		Variables.startTime = 0;
+		dwk.guiIsDone = true;
+		dwk.startTime = 0;
 		this.dispose();
 	}
 
