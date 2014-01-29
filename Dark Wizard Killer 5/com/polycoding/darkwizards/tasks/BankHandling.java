@@ -1,11 +1,13 @@
 package com.polycoding.darkwizards.tasks;
 
+import java.util.concurrent.Callable;
+
+import org.powerbot.script.util.Condition;
 import org.powerbot.script.wrappers.GameObject;
 import org.powerbot.script.wrappers.Item;
 import org.powerbot.script.wrappers.Tile;
 
 import com.polycoding.darkwizards.DarkWizardKiller;
-import com.polycoding.darkwizards.util.Timer;
 import com.polycoding.darkwizards.util.scriptcore.Task;
 
 public class BankHandling extends Task {
@@ -23,46 +25,48 @@ public class BankHandling extends Task {
 		if (!ctx.bank.isOpen()) {
 			log("Opening booth");
 			if (open()) {
-				final Timer openTimer = new Timer(1000);
-				while (openTimer.isRunning()) {
-					sleep(100);
-					if (!ctx.bank.isOpen() || ctx.players.local().isInMotion())
-						openTimer.reset();
-				}
+				Condition.wait(new Callable<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						return ctx.bank.isOpen()
+								|| !ctx.players.local().isInMotion();
+					}
+				}, 150, 15);
 			}
 		} else {
 			if (!ctx.backpack.select().isEmpty()) {
 				log("Depositing everything");
 				ctx.bank.depositInventory();
-				final Timer depositTimer = new Timer(1000);
-				while (depositTimer.isRunning()) {
-					sleep(100);
-					if (!ctx.backpack.select().isEmpty())
-						depositTimer.reset();
-				}
+				Condition.wait(new Callable<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						return ctx.backpack.isEmpty();
+					}
+				}, 150, 20);
 			}
 			if (ctx.backpack.select().isEmpty()) {
 				log("Bag is empty, time to withdraw food!");
-				Item food = ctx.bank.select().id(dwk.foodId).poll();
+				final Item food = ctx.bank.select().id(dwk.foodId).poll();
 				if (ctx.bank.select().id(food.getId()).isEmpty())
 					stopScript("Out of food!", true);
 				if (ctx.bank.withdraw(food.getId(), dwk.foodAmount)) {
 					log("Withdrawing " + food.getName());
-					final Timer withdrawTimer = new Timer(1000);
-					while (withdrawTimer.isRunning()) {
-						sleep(100);
-						if (ctx.backpack.select().id(food.getId()).isEmpty())
-							withdrawTimer.reset();
-					}
+					Condition.wait(new Callable<Boolean>() {
+						@Override
+						public Boolean call() throws Exception {
+							return !ctx.backpack.select().id(food.getId())
+									.isEmpty();
+						}
+					}, 150, 20);
 					if (ctx.backpack.size() > 0) {
 						log("closing bank");
 						ctx.bank.close();
-						final Timer timer = new Timer(1000);
-						while (timer.isRunning()) {
-							sleep(100);
-							if (ctx.bank.isOpen())
-								timer.reset();
-						}
+						Condition.wait(new Callable<Boolean>() {
+							@Override
+							public Boolean call() throws Exception {
+								return !ctx.bank.isOpen();
+							}
+						}, 150, 15);
 					}
 				}
 			}

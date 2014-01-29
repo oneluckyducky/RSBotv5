@@ -1,10 +1,12 @@
 package com.polycoding.darkwizards.tasks;
 
+import java.util.concurrent.Callable;
+
+import org.powerbot.script.util.Condition;
 import org.powerbot.script.wrappers.Component;
 import org.powerbot.script.wrappers.Tile;
 
 import com.polycoding.darkwizards.DarkWizardKiller;
-import com.polycoding.darkwizards.util.Timer;
 import com.polycoding.darkwizards.util.scriptcore.Task;
 
 public class WizardTravelling extends Task {
@@ -33,22 +35,24 @@ public class WizardTravelling extends Task {
 		varrockChoice = ctx.widgets.get(lodestoneWidget, varrockComponent);
 		if (homeTele.click()) {
 			log("Lodestone to varrock");
-			final Timer openTimer = new Timer(1500);
-			while (openTimer.isRunning()) {
-				sleep(100);
-				if (!isWidgetChildVisible(varrockChoice))
-					openTimer.reset();
-			}
+			Condition.wait(new Callable<Boolean>() {
+				@Override
+				public Boolean call() throws Exception {
+					return isWidgetChildVisible(varrockChoice);
+				}
+			}, 150, 25);
 		}
 		if (isWidgetChildVisible(varrockChoice)) {
 			if (varrockChoice.getTextureId() == varrockUnlockedTexture) {
 				log("Teleporting....");
 				varrockChoice.interact("Teleport");
-				final Timer timer = new Timer(2000);
-				while (timer.isRunning()) {
-					if (ctx.players.local().getAnimation() != -1)
-						timer.reset();
-				}
+				Condition.wait(new Callable<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						return ctx.players.local().getAnimation() == -1;
+					}
+				}, 150, 25);
+
 			} else {
 				stopScript("Varrock lodestone not unlocked!", true);
 			}

@@ -1,6 +1,9 @@
 package com.polycoding.darkwizards.tasks;
 
+import java.util.concurrent.Callable;
+
 import org.powerbot.script.lang.GroundItemQuery;
+import org.powerbot.script.util.Condition;
 import org.powerbot.script.util.GeItem;
 import org.powerbot.script.wrappers.GroundItem;
 import org.powerbot.script.wrappers.Interactive;
@@ -39,7 +42,7 @@ public class Combat extends Task {
 			ctx.keyboard.send("1");
 		}
 		Npc wizard = ctx.npcs.select().id(DarkWizardKiller.WIZARD_IDS)
-				.select(Interactive.areOnScreen()).nearest().limit(2).shuffle()
+				.select(Interactive.areOnScreen()).nearest().limit(3).shuffle()
 				.poll();
 		if (!wizard.isOnScreen()) {
 			ctx.movement.stepTowards(wizard);
@@ -47,12 +50,12 @@ public class Combat extends Task {
 		} else {
 			log("Attacking @ " + wizard.getLocation().toString());
 			if (!wizard.isInCombat() && wizard.interact("Attack")) {
-				final Timer timer = new Timer(2400);
-				while (timer.isRunning()) {
-					sleep(300);
-					if (ctx.players.local().isInMotion())
-						timer.reset();
-				}
+				Condition.wait(new Callable<Boolean>() {
+					@Override
+					public Boolean call() throws Exception {
+						return !ctx.players.local().isInMotion();
+					}
+				}, 150, 20);
 			}
 		}
 		if (checkForLoot())
@@ -71,6 +74,7 @@ public class Combat extends Task {
 			final GroundItem item = itemQuery.shuffle().poll();
 			log("Taking " + item.getName());
 			if (item.interact("Take")) {
+	
 				final Timer timer = new Timer(2000);
 				while (item.isValid()) {
 					if (ctx.players.local().isInMotion())

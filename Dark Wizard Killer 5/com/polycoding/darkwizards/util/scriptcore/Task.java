@@ -10,12 +10,12 @@ import com.polycoding.darkwizards.DarkWizardKiller;
 public abstract class Task extends ScriptContext {
 
 	Date d = null;
-	
+
 	DarkWizardKiller dwk = null;
 
 	public Task(DarkWizardKiller arg0) {
 		super(arg0);
-		dwk=arg0;
+		dwk = arg0;
 		d = new Date();
 	}
 
@@ -42,7 +42,7 @@ public abstract class Task extends ScriptContext {
 		if (popup)
 			JOptionPane.showMessageDialog(null, s);
 		log(s);
-		DarkWizardKiller.taskList.clear();
+		dwk.taskList.clear();
 	}
 
 	public void sleep(final long ms) {

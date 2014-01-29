@@ -20,10 +20,6 @@ import org.powerbot.script.wrappers.Area;
 import org.powerbot.script.wrappers.Tile;
 
 import com.polycoding.darkwizards.gui.GUI;
-import com.polycoding.darkwizards.tasks.BankHandling;
-import com.polycoding.darkwizards.tasks.BankTravelling;
-import com.polycoding.darkwizards.tasks.Combat;
-import com.polycoding.darkwizards.tasks.WizardTravelling;
 import com.polycoding.darkwizards.util.Timer;
 import com.polycoding.darkwizards.util.scriptcore.Task;
 
@@ -33,15 +29,13 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 	private final RenderingHints antialiasing = new RenderingHints(
 			RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-	public static ArrayList<Task> taskList = new ArrayList<Task>();
+	public ArrayList<Task> taskList = new ArrayList<Task>();
 
-	public static Timer scriptTimer = new Timer(0);
+	public Timer scriptTimer = new Timer(0);
 
 	private GUI gui;
 
 	public static Task currentTask = null;
-
-	public Timer combatTimer = new Timer(3000);
 
 	public int startingExperience = 0, profit = 0, foodId = 0, foodAmount = 0;
 
@@ -66,10 +60,10 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 			"Staff of air", "Water talisman", "Fire Talisman",
 			"Earth talisman", "Staf of water" };
 
-	private DarkWizardKiller get(){
+	private DarkWizardKiller get() {
 		return this;
 	}
-	
+
 	@Override
 	public void start() {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -86,11 +80,6 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 		final Skills skills = ctx.skills;
 		for (int i = 0; i < 7; i++)
 			startingExperience += skills.getExperience(i);
-
-		taskList.add(new BankTravelling(this));
-		taskList.add(new BankHandling(this));
-		taskList.add(new Combat(this));
-		taskList.add(new WizardTravelling(this));
 	}
 
 	@Override
@@ -136,10 +125,9 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 		final String gainedProfitString = df.format(profit);
 		final String hourlyProfitString = df.format(hourlyProfit);
 
-		final String killsString = df.format(gainedExp / 65.5);
+		final String killsString = df.format((int) gainedExp / 65.5);
 		final String hourlyKillsString = df.format(hourlyKills);
 
-		// -- Fill top bar
 		g.setColor(new Color(0, 0, 0, 0.80f));
 		g.fillRect(0, 40, 352, 172);
 
@@ -153,7 +141,6 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 		g.drawString(String.format("Kills (hr): %s   (%s)", killsString,
 				hourlyKillsString), 25, 151);
 
-		// -- Status and label
 		g.setColor(Color.GRAY);
 		g.setFont(new Font("Kristen ITC", Font.BOLD, 11));
 		g.drawString("Dark Wizard Killer by OneLuckyDuck", 25, 64);

@@ -9,6 +9,10 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import com.polycoding.darkwizards.DarkWizardKiller;
+import com.polycoding.darkwizards.tasks.BankHandling;
+import com.polycoding.darkwizards.tasks.BankTravelling;
+import com.polycoding.darkwizards.tasks.Combat;
+import com.polycoding.darkwizards.tasks.WizardTravelling;
 
 public class GUI extends JFrame {
 
@@ -95,6 +99,11 @@ public class GUI extends JFrame {
 		dwk.guiIsDone = true;
 		dwk.startTime = 0;
 		this.dispose();
+
+		dwk.taskList.add(new BankTravelling(dwk));
+		dwk.taskList.add(new BankHandling(dwk));
+		dwk.taskList.add(new Combat(dwk));
+		dwk.taskList.add(new WizardTravelling(dwk));
 	}
 
 }

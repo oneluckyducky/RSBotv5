@@ -1,12 +1,13 @@
 package com.polycoding.darkwizards.tasks;
 
 import java.util.EnumSet;
+import java.util.concurrent.Callable;
 
+import org.powerbot.script.util.Condition;
 import org.powerbot.script.wrappers.Path.TraversalOption;
 import org.powerbot.script.wrappers.Tile;
 
 import com.polycoding.darkwizards.DarkWizardKiller;
-import com.polycoding.darkwizards.util.Timer;
 import com.polycoding.darkwizards.util.scriptcore.Task;
 
 public class BankTravelling extends Task {
@@ -29,13 +30,12 @@ public class BankTravelling extends Task {
 			log("Walking to: " + tile.toString());
 			ctx.movement.findPath(tile).traverse(
 					EnumSet.of(TraversalOption.HANDLE_RUN));
-
-			final Timer timer = new Timer(300);
-			while (timer.isRunning()) {
-				sleep(10);
-				if (ctx.players.local().isInMotion())
-					timer.reset();
-			}
+			Condition.wait(new Callable<Boolean>() {
+				@Override
+				public Boolean call() throws Exception {
+					return !ctx.players.local().isInMotion();
+				}
+			});
 		}
 	}
 
