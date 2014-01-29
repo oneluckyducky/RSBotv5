@@ -33,7 +33,7 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 
 	public Timer scriptTimer = new Timer(0);
 
-	private GUI gui;
+	private GUI gui = null;
 
 	public static Task currentTask = null;
 
@@ -60,16 +60,12 @@ public class DarkWizardKiller extends PollingScript implements PaintListener {
 			"Staff of air", "Water talisman", "Fire Talisman",
 			"Earth talisman", "Staf of water" };
 
-	private DarkWizardKiller get() {
-		return this;
-	}
-
 	@Override
 	public void start() {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				gui = new GUI(get());
+				gui = new GUI(DarkWizardKiller.this);
 			}
 		});
 		while (!guiIsDone) {
