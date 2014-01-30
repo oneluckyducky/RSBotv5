@@ -62,10 +62,6 @@ public class Combat extends Task {
 			return;
 	}
 
-	private boolean isMomentumActive() {
-		return ctx.settings.get(682) == 7077923;
-	}
-
 	private boolean checkForLoot() {
 		GroundItemQuery<GroundItem> itemQuery = ctx.groundItems.select()
 				.id(DarkWizardKiller.LOOTABLE_ITEMS).nearest();
